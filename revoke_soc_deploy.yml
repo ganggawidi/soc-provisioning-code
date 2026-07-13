@@ -1,0 +1,25 @@
+---
+- name: Revoke soc-deploy access from target server
+  hosts: target
+  become: yes
+
+  tasks:
+    - name: Remove authorized_keys (revoke SSH access)
+      file:
+        path: /home/soc-deploy/.ssh/authorized_keys
+        state: absent
+      ignore_errors: yes
+
+    - name: Remove sudoers file (revoke sudo access)
+      file:
+        path: /etc/sudoers.d/soc-deploy
+        state: absent
+      ignore_errors: yes
+
+    - name: Lock soc-deploy account
+      command: usermod -L soc-deploy
+      ignore_errors: yes
+
+    - name: Confirm revocation complete
+      debug:
+        msg: "soc-deploy SSH key and sudo access revoked from {{ inventory_hostname }}."
